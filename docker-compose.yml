@@ -1,0 +1,27 @@
+services:
+  billing_backend:
+    build: .
+    env_file:
+      - .env
+      - .env.test
+    ports:
+      - "8080:8080"
+    working_dir: /app
+    command: /bin/sh -cexecute_test.sh
+    depends_on:
+      shared_postgres:
+        condition: service_healthy
+
+  shared_postgres:
+    image: postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: billings
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
